@@ -1,50 +1,51 @@
-const sudoku = require("sudoku");
+const axios = require("axios").default;
 
-const generateSudokus = (num) => {
-  const easyPuzzles = [];
-  const mediumPuzzles = [];
-  const hardPuzzles = [];
-  
-  for (let i = 0; i < num; i++) {
-    let puzzle = sudoku.makepuzzle();
-    let solvedPuzzle = sudoku.solvepuzzle(puzzle);
-    let difficulty = sudoku.ratepuzzle(puzzle, 4) // Rates it out of 10
-    
-    // puts puzzles in 1-9 format
-    for (let i = 0; i < puzzle.length; i++) {
-      if (puzzle[i]) {
-        puzzle[i] += 1;
-        given++;
-      } else {
-        puzzle[i] = 0;
-      }
-      
-      solvedPuzzle[i] += 1;
-    }
-    
-    // Creates an object to store all the data
-    let completePuzzle = {
-      puzzle: puzzle,
-      solvedPuzzle: solvedPuzzle,
-      difficulty: difficulty
-    }
-    
-    if (difficulty >= 0 && difficulty <= 0.1) {
-      easyPuzzles.push(completePuzzle);
-    } else if (difficulty > 0.1 && difficulty < 2) {
-      // Medium
-      mediumPuzzles.push(completePuzzle);
-    } else {
-      // Hard
-      hardPuzzles.push(completePuzzle);
-    }
+// generate a single sudoku (with solution) of a certain difficulty
+const generateSudoku = async (difficulty) => {
+  try {
+    const res = await axios.get(`https://sugoku.herokuapp.com/board?difficulty=${difficulty}`);
+    const sudoku = res.data.board;
+    const solution = await solveSudoku(sudoku);
+
+    return { puzzle: sudoku, solution };
+  } catch(err) {
+    console.log(err);
   }
-  
-  return {
-    easy: easyPuzzles,
-    medium: mediumPuzzles,
-    hard: hardPuzzles,
-  };
 }
 
+const solveSudoku = async (sudoku) => {
+  try{
+    const res = await axios.post("https://sugoku.herokuapp.com/solve", {
+      method: 'POST',
+      body: encodeParams(sudoku),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    
+    return res.data.solution;
+  } catch(err){
+    console.log(err);
+  }
+}
+
+// the only function thats exported
+// generates an array of sudokus of a certain difficulty
+const generateSudokus = async (difficulty, num) => {
+  const sudokus = []
+  
+  for (let i = 0; i < num; i++) {
+    sudokus.push(await generateSudoku(difficulty));
+  }
+
+  return sudokus;
+}
+
+// helper functions copied from the github
+const encodeBoard = (board) => board.reduce((result, row, i) => result + `%5B${encodeURIComponent(row)}%5D${i === board.length -1 ? '' : '%2C'}`, '');
+
+const encodeParams = (params) => 
+  Object.keys(params)
+  .map(key => key + '=' + `%5B${encodeBoard(params[key])}%5D`)
+  .join('&');
+
+// URL: https://github.com/bertoort/sugoku
 module.exports = generateSudokus;
