@@ -11,12 +11,17 @@
   "license": "ISC",
   "dependencies": {
     "@replit/database": "^2.0.1",
+    "animality": "^1.6.0",
     "axios": "^0.26.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "express-rate-limit": "^6.3.0",
     "http": "0.0.1-security",
+    "mad5dsudoku": "^1.0.20",
+    "qs": "^6.10.3",
     "socket.io": "^4.4.1",
-    "sudoku": "0.0.3"
+    "sudoku": "0.0.3",
+    "sudokubox": "^0.31.0"
   }
 }

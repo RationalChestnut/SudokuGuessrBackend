@@ -1,4 +1,5 @@
-const axios = require("axios").default;
+const axios = require("axios");
+let {makepuzzle, solvepuzzle} = require('sudoku');
 
 // generate a single sudoku (with solution) of a certain difficulty
 const generateSudoku = async (difficulty) => {
@@ -14,17 +15,28 @@ const generateSudoku = async (difficulty) => {
 }
 
 const solveSudoku = async (sudoku) => {
-  try{
-    const res = await axios.post("https://sugoku.herokuapp.com/solve", {
-      method: 'POST',
-      body: encodeParams(sudoku),
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    
-    return res.data.solution;
-  } catch(err){
-    console.log(err);
+  let convertedSudoku = []
+  for (let i = 0; i < sudoku.length; i++) {
+    for (let j = 0; j < sudoku[i].length; j++) {
+      if (sudoku[i][j] === 0) {
+        convertedSudoku.push(null);
+      } else {
+        convertedSudoku.push(sudoku[i][j] - 1);
+      }
+    }
   }
+  
+  let convertedSolution = solvepuzzle(convertedSudoku);
+  let solution = [];
+  for (let i = 0; i < convertedSolution.length; i += 9) {
+    let row = [];
+    for (let j = 0; j < 9; j++) {
+      row.push(convertedSolution[i + j] + 1);
+    }
+    solution.push(row);
+  }
+  
+  return solution;
 }
 
 // the only function thats exported
@@ -40,7 +52,7 @@ const generateSudokus = async (difficulty, num) => {
 }
 
 // helper functions copied from the github
-const encodeBoard = (board) => board.reduce((result, row, i) => result + `%5B${encodeURIComponent(row)}%5D${i === board.length -1 ? '' : '%2C'}`, '');
+const encodeBoard = (board) => board.reduce((result, row, i) => result + `%5B${encodeURIComponent(row)}%5D${i === board.length -1 ? '' : '%2C'}`, '')
 
 const encodeParams = (params) => 
   Object.keys(params)
