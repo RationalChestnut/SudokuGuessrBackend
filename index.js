@@ -12,11 +12,13 @@ const animality = require("animality")
 const animals = require("./animals.js");
 
 app.use(express.json());
-app.use(cors({origin: "https://sudokuguessr.yxli666.repl.co"}));
+var corsOptions = {
+  origin: function (origin, callback) {
+    callback(null, true);
+  }
+}
 
-// db.get("easySudokus").then((value) => {
-//   console.log(value[0]);
-// })
+app.use(cors(corsOptions));
 
 app.post("/getSudoku", (req, res) => {
   let {difficulty} = req.body;
